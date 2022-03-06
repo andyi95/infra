@@ -1,0 +1,164 @@
+version: "3.4"
+
+services:
+    whoami:
+        image: emilevauge/whoami
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.whoami.rule=Host(`whoami.dev.andyi95.com`)"
+            - "traefik.http.routers.whoami-secure.rule=Host(`whoami.dev.andyi95.com`)"
+            - "traefik.http.routers.whoami.entrypoints=web"
+
+    traefik:
+        image: traefik:v2.4
+        restart: unless-stopped
+        network_mode: host
+        command:
+            - --api.insecure=true
+            - --api.dashboard=true
+            - --api.debug=true
+            - --log.level=DEBUG
+            - --providers.docker=true
+            - --providers.docker.exposedbydefault=false
+            - --entrypoints.app.address=:80
+            - --entrypoints.app-secured.address=:443
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=192.168.1.0/24"
+            - "traefik.http.routers.traefik_api.rule=Host(`traefik.dev.andyi95.com`)"
+        volumes:
+            -  /var/run/docker.sock:/var/run/docker.sock
+            - ./traefik/traefik.yaml:/traefik.yaml
+            - ./traefik/data:/data
+
+    dns:
+        build: ./dnsmasq
+        restart: unless-stopped
+        network_mode: host
+        cap_add:
+            - NET_ADMIN
+
+    adminer:
+        image: adminer
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=172.17.0.0/11"
+            - "traefik.http.middlewares.https.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.https.redirectscheme.permanent=true"
+            - "traefik.http.routers.traefik_api.rule=Host(`${TRAEFIK_API_HOST}`)"
+            - "traefik.http.routers.traefik_api.middlewares=internal"
+            - "traefik.http.services.traefik_api.loadbalancer.server.port=8080"
+
+#    vpn:
+#        image: hwdsl2/ipsec-vpn-server
+#        restart: unless-stopped
+#        privileged: true
+#        volumes:
+#            - /lib/modules:/lib/modules:ro
+#        ports:
+#            - "0.0.0.0:500:500/udp"
+#            - "0.0.0.0:4500:4500/udp"
+#        environment:
+#            - "VPN_IPSEC_PSK=${VPN_IPSEC_PSK}"
+#            - "VPN_USER=${VPN_USER}"
+#            - "VPN_PASSWORD=${VPN_PASSWORD}"
+#            - "VPN_PUBLIC_IP=${VPN_PUBLIC_IP}"
+#            - "VPN_L2TP_NET=10.0.0.0/8"
+#            - "VPN_L2TP_LOCAL=10.1.1.1"
+#            - "VPN_L2TP_POOL=10.1.1.2-10.1.1.250"
+#            - "VPN_DNS_SRV1=10.10.10.10"
+
+
+#
+#    mariadb:
+#        image: mariadb:10.6
+#        restart: unless-stopped
+#        environment:
+#            - "MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}"
+#        ports:
+#            - "0.0.0.0:3306:3306"
+#        volumes:
+#            - ./mariadb/data:/var/lib/mysql
+#            - ./mariadb/server.conf:/etc/mysql/mariadb.conf.d/70-server.cnf
+#
+#    postgres:
+#        image: postgres:13.3
+#        restart: unless-stopped
+#        environment:
+#            - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+#        ports:
+#            - "0.0.0.0:5432:5432"
+#        volumes:
+#            - ./postgres/data:/var/lib/postgresql/data
+#
+
+#    elasticsearch:
+#        image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+#        environment:
+#            - "discovery.type=single-node"
+#            - "bootstrap.memory_lock=true"
+#            - "ES_JAVA_OPTS=-Xmx256m -Xms256m"
+#            - "ELASTIC_PASSWORD=${ELASTIC_PASSWORD}"
+#        volumes:
+#            - ./elasticsearch/data:/usr/share/elasticsearch/data
+#            - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+#        ulimits:
+#            memlock:
+#                soft: -1
+#                hard: -1
+#
+#    kibana:
+#        image: docker.elastic.co/kibana/kibana:7.14.0
+#        environment:
+#            - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200"
+#            - "ELASTICSEARCH_USERNAME=elastic"
+#            - "ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}"
+#            - "SERVER_PUBLICBASEURL=https://kibana.creonit.dev"
+#            - "LS_JAVA_OPTS=Xmx256m -Xms256m"
+#        volumes:
+#            - ./kibana/data:/usr/share/kibana/data
+#        labels:
+#            - "traefik.enable=true"
+#            - "traefik.http.routers.kibana.rule=Host(`kibana.creonit.dev`)"
+#
+#
+#    metricbeat:
+#        image: docker.elastic.co/beats/metricbeat:7.14.0
+#        user: root
+#        volumes:
+#            - ./metricbeat/metricbeat.yaml:/usr/share/metricbeat/metricbeat.yml:ro
+#            - /var/run/docker.sock:/var/run/docker.sock:ro
+#            - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+#            - /proc:/hostfs/proc:ro
+#            - /:/hostfs:ro
+#        cap_add:
+#            - SYS_PTRACE
+#            - DAC_READ_SEARCH
+#        command: -e -strict.perms=false -system.hostfs=/hostfs -E output.elasticsearch.hosts=["elasticsearch:9200"]
+#        environment:
+#            - "ELASTICSEARCH_USERNAME=elastic"
+#            - "ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}"
+#            - "MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}"
+#
+#    filebeat:
+#        image: docker.elastic.co/beats/filebeat:7.14.0
+#        user: root
+#        volumes:
+#            - ./filebeat/filebeat.yaml:/usr/share/filebeat/filebeat.yml:ro
+#            - /var/lib/docker/containers:/var/lib/docker/containers:ro
+#            - /var/run/docker.sock:/var/run/docker.sock:ro
+#        command: -e -strict.perms=false -E output.elasticsearch.hosts=["elasticsearch:9200"]
+#        environment:
+#            - "ELASTICSEARCH_USERNAME=elastic"
+#            - "ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}"
+
+#    error-pages:
+#        image: caddy:latest
+#        restart: unless-stopped
+#        volumes:
+#            - ./error-pages:/usr/share/caddy:ro
+#        labels:
+#            - "traefik.enable=true"
+#            - "traefik.http.routers.errorpage.rule=HostRegexp(`{host:.+}`)"
