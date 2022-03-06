@@ -24,8 +24,13 @@ services:
             - --entrypoints.app-secured.address=:443
         labels:
             - "traefik.enable=true"
-            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=192.168.1.0/24"
-            - "traefik.http.routers.traefik_api.rule=Host(`traefik.dev.andyi95.com`)"
+            - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=172.17.0.0/11"
+            - "traefik.http.middlewares.https.redirectscheme.scheme=https"
+            - "traefik.http.middlewares.https.redirectscheme.permanent=true"
+            - "traefik.http.routers.traefik_api.rule=Host(`${TRAEFIK_API_HOST}`)"
+            - "traefik.http.routers.traefik_api.middlewares=internal"
+            - "traefik.http.services.traefik_api.loadbalancer.server.port=8080"
         volumes:
             -  /var/run/docker.sock:/var/run/docker.sock
             - ./traefik/traefik.yaml:/traefik.yaml

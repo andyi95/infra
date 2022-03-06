@@ -35,6 +35,9 @@ certificatesResolvers:
             tlsChallenge: {}
             httpChallenge:
                 entryPoint: web
+            dnsChallenge:
+                provider: manual
+                delayBeforeCheck: 600
 api:
     dashboard: true
     insecure: true
