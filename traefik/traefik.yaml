@@ -1,0 +1,82 @@
+entryPoints:
+    web:
+        address: ":80"
+        http:
+            redirections:
+                entryPoint:
+                    to: websecure
+                    scheme: https
+    websecure:
+        address: ":443"
+        http:
+            tls:
+                certResolver: default
+                domains:
+                    - main: "*.dev.andyi95.com"
+
+    nosecure:
+        address: ":8088"
+
+providers:
+    docker:
+        endpoint: unix:///var/run/docker.sock
+        exposedByDefault: false
+        watch: true
+        network: docker
+    file:
+        filename: "/traefik.yaml"
+        watch: true
+
+certificatesResolvers:
+    default:
+        acme:
+            email: "dev@blackberrystudio.com"
+            storage: "/data/acme.json"
+            tlsChallenge: {}
+            httpChallenge:
+                entryPoint: web
+api:
+    dashboard: true
+    insecure: true
+
+ping:
+    entryPoint: web
+
+log:
+    level: DEBUG
+
+http:
+    middlewares:
+        cors:
+            headers:
+                accessControlAllowMethods:
+                    - GET
+                    - POST
+                    - PUT
+                    - DELETE
+                    - OPTIONS
+                accessControlAllowOriginList:
+                    - "*"
+                accessControlAllowHeaders:
+                    - "Origin"
+                    - "X-Requested-With"
+                    - "Content-Type"
+                    - "Accept"
+                    - "Token"
+                    - "Authorization"
+                accessControlMaxAge: 100
+                addVaryHeader: true
+
+    services:
+        cockpit:
+            loadBalancer:
+                serversTransport: insecureHttps
+                servers:
+                    - url: https://188.166.203.102:9090
+
+    routers:
+        cockpit:
+            rule: "Host(`cockpit.dev.andyi95.com`)"
+            service: cockpit
+            middlewares:
+                - internal@docker

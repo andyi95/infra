@@ -1,0 +1,49 @@
+name: Custom infrastructure workflow
+
+on: [push]
+
+env:
+  DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+jobs:
+  deploy:
+    name: Deploy images on the destination server
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: dist
+          target: ${{ secrets.DEPLOY_PATH }}
+          strip_components: 1
+      - name: Copy env vars
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_DEBUG: false
+          envkey_TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
+          envkey_TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
+          envkey_COMPOSE_PROJECT_NAME: "stage"
+          file_name: .env
+          fail_on_empty: false
+          directory: ${{ secrets.DEPLOY_PATH }}
+
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            set -e
+            echo "Building stage"
+            echo " "
+            bash -c '
+            set -a
+            (printenv | grep -v "^_=" | sort)
+            ' > .env
+            docker-compose up -d --build --force-recreate --remove-orphans
