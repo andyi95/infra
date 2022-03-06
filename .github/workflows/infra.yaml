@@ -54,6 +54,7 @@ jobs:
             echo " "
             bash -c '
             set -a
+            source .env
             (printenv | grep -v "^_=" | sort)
             ' > .env
-#            docker-compose up -d --build --force-recreate --remove-orphans
+            docker-compose up -d --build --force-recreate --remove-orphans
