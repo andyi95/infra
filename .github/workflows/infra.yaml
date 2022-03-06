@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir ../build
           cp -TR . ../build
-          tar -cvf deploy.tar ../build/
+          tar -cvf deploy.tar ../build/*
 
       - name: Deploy to server
         uses: appleboy/scp-action@master
@@ -46,7 +46,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ${{ secrets.DEPLOY_PATH }}
+            mkdir -p infra
+            tar -xvf deploy.tar -C infra/
+            cd infra
             set -e
             echo "Building stage"
             echo " "
