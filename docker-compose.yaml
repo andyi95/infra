@@ -35,7 +35,6 @@ services:
             -  /var/run/docker.sock:/var/run/docker.sock
             - ./traefik/traefik.yaml:/traefik.yaml
             - ./traefik/data:/data
-            - ./traefik/acme.json:/acme.json
 
     dns:
         build: ./dnsmasq
