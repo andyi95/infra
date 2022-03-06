@@ -25,7 +25,7 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_BASIC_AUTH}"
-            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=172.17.0.0/11"
+            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=${IP_WHITELIST}"
             - "traefik.http.middlewares.https.redirectscheme.scheme=https"
             - "traefik.http.middlewares.https.redirectscheme.permanent=true"
             - "traefik.http.routers.traefik_api.rule=Host(`${TRAEFIK_API_HOST}`)"
@@ -50,10 +50,8 @@ services:
             - "traefik.enable=true"
             - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_BASIC_AUTH}"
             - "traefik.http.routers.adminer.middlewares=auth"
-            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=172.17.0.0/11"
-            - "traefik.http.routers.traefik_api.rule=Host(`${TRAEFIK_API_HOST}`)"
-            - "traefik.http.routers.traefik_api.middlewares=internal"
-            - "traefik.http.services.traefik_api.loadbalancer.server.port=8080"
+            - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=${IP_WHITELIST}"
+
 
     portainer:
         image: portainer/portainer

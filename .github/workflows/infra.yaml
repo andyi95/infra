@@ -16,10 +16,11 @@ jobs:
       - name: Copy env vars
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          envkey_DEBUG: false
+          envkey_DEBUG: true
+          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
           TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
           TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
-          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
           COMPOSE_PROJECT_NAME: "stage"
           file_name: .env
           fail_on_empty: false
@@ -61,6 +62,11 @@ jobs:
             (printenv | grep -v "^_=" | sort)
             ' > .env
             docker-compose up -d --build --force-recreate --remove-orphans
+          env:
+            IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
+            TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
+            TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
+
 
       - name: send telegram message
         uses: appleboy/telegram-action@master
