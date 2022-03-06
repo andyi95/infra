@@ -10,7 +10,8 @@ services:
             - "traefik.http.routers.whoami.entrypoints=web"
 
     traefik:
-        image: traefik:v2.4
+        build:
+            context: traefik
         restart: unless-stopped
         network_mode: host
         command:
@@ -35,6 +36,7 @@ services:
             -  /var/run/docker.sock:/var/run/docker.sock
             - ./traefik/traefik.yaml:/traefik.yaml
             - ./traefik/data:/data
+            - ./traefik/acme.json:/acme.json
 
     dns:
         build: ./dnsmasq
