@@ -12,6 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Copy env vars
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          envkey_DEBUG: false
+          TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
+          TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
+          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          COMPOSE_PROJECT_NAME: "stage"
+          file_name: .env
+          fail_on_empty: false
+
       - name: Copy files to server
         run: |
           mkdir ../build
@@ -27,17 +39,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "deploy.tar"
           target: "./"
-
-      - name: Copy env vars
-        uses: SpicyPizza/create-envfile@v1.3
-        with:
-          envkey_DEBUG: false
-          TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
-          TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
-          envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          COMPOSE_PROJECT_NAME: "stage"
-          file_name: .env
-          fail_on_empty: false
 
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -60,3 +61,12 @@ jobs:
             (printenv | grep -v "^_=" | sort)
             ' > .env
             docker-compose up -d --build --force-recreate --remove-orphans
+
+        - name: send telegram message
+          uses: appleboy/telegram-action@master
+          with:
+            to: ${{ secrets.TELEGRAM_TO }}
+            token: ${{ secrets.TELEGRAM_TOKEN }}
+              message: |
+                Report on the last run of ${{ github.workflow }}.
+                ${{ github.job }} in workflow ${{ github.action }} from repo ${{ github.repository }} has finished with status ${{ job.status }}.
