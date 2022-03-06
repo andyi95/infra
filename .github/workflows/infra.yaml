@@ -11,8 +11,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'}}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Copy files to server
-        uses: actions/checkout@v2
         run: |
           mkdir ../build
           cp -TR . ../build
@@ -26,8 +26,9 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "deploy.tar"
-          target: "./"
+          target: "infra/"
           strip_components: 1
+
       - name: Copy env vars
         uses: SpicyPizza/create-envfile@v1.3
         with:
