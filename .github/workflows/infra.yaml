@@ -26,8 +26,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "deploy.tar"
-          target: "infra/"
-          strip_components: 1
+          target: "./"
 
       - name: Copy env vars
         uses: SpicyPizza/create-envfile@v1.3
