@@ -70,6 +70,10 @@ http:
                 accessControlMaxAge: 100
                 addVaryHeader: true
 
+    serversTransports:
+        insecureHttps:
+            insecureSkipVerify: true
+
     services:
         cockpit:
             loadBalancer:
