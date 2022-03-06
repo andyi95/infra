@@ -43,11 +43,16 @@ jobs:
 
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
+        env:
+          IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
+          TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
+          TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
+          envs: IP_WHITELIST,TRAEFIK_BASIC_AUTH,TRAEFIK_API_HOST
           script: |
             mkdir -p infra
             tar -xvf deploy.tar -C infra/
@@ -62,10 +67,7 @@ jobs:
             (printenv | grep -v "^_=" | sort)
             ' > .env
             docker-compose up -d --build --force-recreate --remove-orphans
-          env:
-            IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
-            TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
-            TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
+
 
 
       - name: send telegram message
