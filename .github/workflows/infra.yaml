@@ -55,7 +55,7 @@ jobs:
           envs: IP_WHITELIST,TRAEFIK_BASIC_AUTH,TRAEFIK_API_HOST
           script: |
             mkdir -p infra
-            tar -xvf --strip-components=1 deploy.tar -C infra/ 
+            tar -xvf deploy.tar --strip-components=1 -C infra/ 
             cd infra
             set -e
             echo "Building stage"
