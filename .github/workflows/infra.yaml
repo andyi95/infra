@@ -63,6 +63,7 @@ jobs:
             bash -c '
             set -a;
             source .env.dist;
+            source .env;
             export DOCKER_USER="1000:1000"
             (printenv | grep -v "^_=" | sort)
             ' > .env
