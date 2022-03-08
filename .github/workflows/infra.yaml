@@ -16,11 +16,12 @@ jobs:
       - name: Copy env vars
         uses: SpicyPizza/create-envfile@v1.3
         with:
-          envkey_DEBUG: true
+
           envkey_SECRET_KEY: ${{ secrets.SECRET_KEY }}
           envkey_TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
           envkey_TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
           envkey_IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
+          envkey_ADMINER_HOST: "adminer.dev.andyi95.com"
           envkey_COMPOSE_PROJECT_NAME: "infra"
           file_name: .env.dist
           fail_on_empty: false
