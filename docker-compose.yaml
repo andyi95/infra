@@ -23,7 +23,7 @@ services:
             - "traefik.http.routers.traefik_api.middlewares=internal"
             - "traefik.http.services.traefik_api.loadbalancer.server.port=8080"
         volumes:
-            -  /var/run/docker.sock:/var/run/docker.sock
+            -  /var/run/docker.sock:/var/run/docker.sock:ro
             - ./traefik/traefik.yaml:/traefik.yaml
             - ./traefik/data:/data
 
@@ -43,17 +43,6 @@ services:
             - "traefik.http.routers.adminer.middlewares=auth"
             - "traefik.http.middlewares.internal.ipwhitelist.sourcerange=${IP_WHITELIST}"
 
-
-    portainer:
-        image: portainer/portainer
-        volumes:
-            -  portainer-data:/data
-            - /var/run/docker.sock:/var/run/docker.sock
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.portainer.rule=Host(`portainer.dev.andyi95.com`)"
-            - "traefik.http.routers.portainer.middlewares=auth"
-            - "traefik.http.services.portainer.loadbalancer.server.port=8080"
 
 volumes:
     portainer-data:
