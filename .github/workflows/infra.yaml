@@ -55,17 +55,17 @@ jobs:
           envs: IP_WHITELIST,TRAEFIK_BASIC_AUTH,TRAEFIK_API_HOST
           script: |
             mkdir -p infra
-            tar -xvf deploy.tar --strip-components=1 -C infra/ 
-            cd infra
-            set -e
+            tar -xvf deploy.tar --strip-components=1 -C infra/
             echo "Building stage"
             echo " "
+            cd infra
             bash -c '
-            set -a
+            set -a;
+            source .env.dist;
             export DOCKER_USER="1000:1000"
+            (printenv | grep -v "^_=" | sort)
+            ' > .env
             docker-compose up -d --build --force-recreate --remove-orphans
-
-
 
       - name: send telegram message
         uses: appleboy/telegram-action@master
