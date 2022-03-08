@@ -22,7 +22,7 @@ jobs:
           envkey_TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
           envkey_IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
           envkey_COMPOSE_PROJECT_NAME: "stage"
-          file_name: .env
+          file_name: .env.dist
           fail_on_empty: false
 
       - name: Copy files to server
@@ -63,9 +63,9 @@ jobs:
             bash -c '
             set -a
             export DOCKER_USER="1000:1000"
-            source .env
-            (printenv | grep -v "^_=" | sort)
-            ' > .env
+#            source .env.dist
+#            (printenv | grep -v "^_=" | sort)
+#            ' > .env.dist
             docker-compose up -d --build --force-recreate --remove-orphans
 
 
