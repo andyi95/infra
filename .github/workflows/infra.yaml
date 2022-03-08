@@ -63,9 +63,6 @@ jobs:
             bash -c '
             set -a
             export DOCKER_USER="1000:1000"
-#            source .env.dist
-#            (printenv | grep -v "^_=" | sort)
-#            ' > .env.dist
             docker-compose up -d --build --force-recreate --remove-orphans
 
 
