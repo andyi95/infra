@@ -25,6 +25,16 @@ providers:
         filename: "/traefik.yaml"
         watch: true
 
+api:
+    dashboard: true
+    insecure: true
+
+ping:
+    entryPoint: web
+
+log:
+    level: DEBUG
+
 certificatesResolvers:
     default:
         acme:
@@ -36,15 +46,6 @@ certificatesResolvers:
             dnsChallenge:
                 provider: manual
                 delayBeforeCheck: 600
-api:
-    dashboard: true
-    insecure: true
-
-ping:
-    entryPoint: web
-
-log:
-    level: DEBUG
 
 http:
     middlewares:
