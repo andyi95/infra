@@ -1,6 +1,9 @@
 name: Custom infrastructure workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 env:
   DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
