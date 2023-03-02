@@ -1,6 +1,9 @@
 name: Custom infrastructure workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 env:
   DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
@@ -48,12 +51,17 @@ jobs:
           IP_WHITELIST: ${{ secrets.IP_WHITELIST }}
           TRAEFIK_BASIC_AUTH: ${{ secrets.TRAEFIK_BASIC_AUTH }}
           TRAEFIK_API_HOST: ${{ secrets.TRAEFIK_API_HOST }}
+          VPN_IPSEC_PSK: ${{ secrets.VPN_IPSEC_PSK }}
+          VPN_USER: ${{ secrets.VPN_USER }}
+          VPN_PASSWORD: ${{ secrets.VPN_PASSWORD }}
+          VPN_ADDL_USERS: ${{ secrets.VPN_ADDL_USERS }}
+          VPN_ADDL_PASSWORDS: ${{ secrets.VPN_ADDL_PASSWORDS }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          envs: IP_WHITELIST,TRAEFIK_BASIC_AUTH,TRAEFIK_API_HOST
+          envs: IP_WHITELIST,TRAEFIK_BASIC_AUTH,TRAEFIK_API_HOST,VPN_IPSEC_PSK,VPN_USER,VPN_PASSWORD,VPN_ADDL_USERS,VPN_ADDL_PASSWORDS
           script: |
             mkdir -p infra
             tar -xvf deploy.tar --strip-components=1 -C infra/

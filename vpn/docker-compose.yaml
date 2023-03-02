@@ -1,0 +1,59 @@
+version: '3.4'
+
+services:
+  openvpn:
+    cap_add:
+      - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    ports:
+      - "1194:1194/udp"
+    restart: unless-stopped
+    volumes:
+      - ./openvpn-data:/etc/openvpn
+      
+  ipsec:
+    image: hwdsl2/ipsec-vpn-server
+    restart: unless-stopped
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - ./ike-vpn-data:/etc/ipsec.d
+    ports:
+      - "500:500/udp"
+      - "4500:4500/udp"
+    privileged: true
+    env_file: .env
+
+  proxy:
+    image: tarampampam/3proxy
+    restart: unless-stopped
+    ports:
+      - "3125:3128"
+      - "3180:1080"
+    environment:
+      - "PROXY_LOGIN=${PROXY_LOGIN}"
+      - "PROXY_PASSWORD=${PROXY_PASSWORD}"
+
+  wireguard:
+    image: linuxserver/wireguard:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - SERVERURL=auto
+      - SERVERPORT=51820
+      - PEERS=8
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.13.13.0
+      - ALLOWEDIPS=0.0.0.0/0
+    volumes:
+      - ./wireguard/config:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
