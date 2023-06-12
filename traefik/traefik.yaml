@@ -12,8 +12,8 @@ entryPoints:
             tls:
                 certResolver: default
                 domains:
-                    - main: "*.dev.andyi95.com"
-
+                    - main: "*.{{env "TRAEFIK_BASE_HOST"}}"
+                    - main: {{env "TRAEFIK_BASE_HOST"}}
     nosecure:
         address: ":8088"
 
@@ -33,22 +33,28 @@ ping:
     entryPoint: web
 
 log:
-    level: DEBUG
+    level: WARN
 
 certificatesResolvers:
     default:
         acme:
-            email: "dev@blackberrystudio.com"
+            email: `{{env "AMCE_EMAIL"}}`
             storage: "/data/acme.json"
             tlsChallenge: {}
             httpChallenge:
                 entryPoint: web
             dnsChallenge:
                 provider: manual
-                delayBeforeCheck: 600
+                delayBeforeCheck: 300
 
 http:
     middlewares:
+        secured:
+            basicAuth:
+                removeHeader: true
+                users:
+                    - `{{env "TRAEFIK_BASIC_AUTH"}}`
+
         cors:
             headers:
                 accessControlAllowMethods:
@@ -74,15 +80,8 @@ http:
             insecureSkipVerify: true
 
     services:
-        cockpit:
+        webmin:
             loadBalancer:
-                serversTransport: insecureHttps
                 servers:
-                    - url: https://188.166.203.102:9090
+                    - url: `{{env "HOST_IP"}}`:10000
 
-    routers:
-        cockpit:
-            rule: "Host(`cockpit.dev.andyi95.com`)"
-            service: cockpit
-            middlewares:
-                - internal@docker

@@ -1,0 +1,61 @@
+version: '3.4'
+
+services:
+  openvpn:
+    cap_add:
+      - NET_ADMIN
+    image: kylemanna/openvpn
+    container_name: openvpn
+    ports:
+      - "3094:1194/udp"
+    restart: unless-stopped
+    volumes:
+      - ./openvpn-data/conf:/etc/openvpn
+
+  ipsec:
+    image: hwdsl2/ipsec-vpn-server
+    restart: unless-stopped
+    volumes:
+      - /lib/modules:/lib/modules:ro
+      - ./ike-vpn-data:/etc/ipsec.d
+    ports:
+      - "13500:500/udp"
+      - "13450:4500/udp"
+    privileged: true
+    env_file: .env
+
+  shadowsocks:
+    image: shadowsocks/shadowsocks-libev:latest
+    environment:
+      - PASSWORD=${PROXY_PASSWORD}
+      - METHOD=aes-256-gcm
+      - ARGS=--fast-open
+      - TZ=Europe/Moscow
+    restart: unless-stopped
+    ports:
+      - "13250:8388/udp"
+      - "13250:8388/tcp"
+
+  wireguard:
+    image: linuxserver/wireguard:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - SERVERURL=auto #optional
+      - SERVERPORT=51820 #optional
+      - PEERS=8 #optional
+      - PEERDNS=165.227.167.17 #optional
+      - INTERNAL_SUBNET=10.13.13.0
+      - ALLOWEDIPS=0.0.0.0/0
+    volumes:
+      - ./wireguard/config:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - 29704:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
